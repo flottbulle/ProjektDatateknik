@@ -11,21 +11,21 @@ gst-launch-1.0 udpsrc port=1234 ! "application/x-rtp, payload=127" ! rtph264depa
 
 
 
-//////// OTHER WAY, WORKS ////////////////
+//////// OTHER WAY, WORKS IN TERMINAL ////////////////
 ////Sender:
-gst-launch-1.0 v4l2src ! \
- video/x-raw,width=640,height=480 ! \
- timeoverlay ! \
- tee name="local" ! \
- queue ! \
- autovideosink local. ! \
- queue ! jpegenc! rtpjpegpay ! \
+gst-launch-1.0 v4l2src !
+ video/x-raw,width=640,height=480 !
+ timeoverlay !
+ tee name="local" !
+ queue !
+ autovideosink local. !
+ queue ! jpegenc! rtpjpegpay !
  udpsink host=127.0.0.1 port= 5000
 
 /////Receiver:
-gst-launch-1.0 udpsrc port=5000 ! \
- application/x-rtp,\
- encoding-name=JPEG,payload=26 ! \
+gst-launch-1.0 udpsrc port=5000 !
+ application/x-rtp,
+ encoding-name=JPEG,payload=26 ! 
  rtpjpegdepay ! jpegdec ! autovideosink
  
  /// link:http://www.z25.org/static/_rd_/videostreaming_intro_plab/
