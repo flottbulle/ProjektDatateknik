@@ -11,8 +11,9 @@ gst-launch-1.0 udpsrc port=1234 ! "application/x-rtp, payload=127" ! rtph264depa
 
 
 
-//////// OTHER WAY, WORKS IN TERMINAL ////////////////
-////Sender:
+//////// ALTERNATIVE WAY ////////////////
+//Sender:
+
 gst-launch-1.0 v4l2src !
  video/x-raw,width=640,height=480 !
  timeoverlay !
@@ -22,7 +23,7 @@ gst-launch-1.0 v4l2src !
  queue ! jpegenc! rtpjpegpay !
  udpsink host=127.0.0.1 port= 5000
 
-/////Receiver:
+//Receiver:
 gst-launch-1.0 udpsrc port=5000 !
  application/x-rtp,
  encoding-name=JPEG,payload=26 ! 
