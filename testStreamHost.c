@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
   
 // v4l2src ! queue ! 'video/x-raw-yuv,width=640,height=480' ! x264enc bitrate=500 speed-preset=superfast tune=zerolatency ! queue ! rtph264pay ! udpsink host=224.1.1.1 port=5000 auto-multicast=true
   /* Build the pipeline */
-  pipeline = gst_parse_launch ("rtpbin, v4l2src device=/dev/video0 ! queue ! video/*,width=1920,height=1080 !  x264enc speed-preset=superfast tune=zerolatency ! queue ! rtph264pay ! udpsink host=127.0.0.1 port=1236", NULL);
+  pipeline = gst_parse_launch ("rtpbin, v4l2src device=/dev/video0 ! queue ! video/*,width=1920,height=1080 !  x264enc speed-preset=superfast tune=zerolatency ! queue ! rtph264pay ! udpsink host=127.0.0.1 port=1234", NULL);
   /* 130.240.152.93 */
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 

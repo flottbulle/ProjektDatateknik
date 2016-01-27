@@ -13,12 +13,12 @@ int main(int argc, char *argv[]) {
 	
 	
 	
-	videosink = gst_element_factory_make("udpsink", "sink");
-	source = gst_element_factory_make("v4l2src","camsrc");
+	videosink = gst_element_factory_make("cluttersink", "sink");
+	source = gst_element_factory_make("udpsrc","camsrc");
 	queue1 = gst_element_factory_make("queue", "q1");
 	queue2 = gst_element_factory_make("queue", "q2");
 	videomixer = gst_element_factory_make("videomixer", "mixer");
-	encoder = gst_element_factory_make("x264enc", "avdec");
+	encoder = gst_element_factory_make("jpegdec", "avdec");
 	payload = gst_element_factory_make("rtph264pay", "pay");
 	pipeline = gst_pipeline_new("the-pipeline");
 	
@@ -43,11 +43,9 @@ speed-preset        : Preset name for speed/quality tradeoff options (can affect
 	    g_printerr ("One element could not be created. Exiting.\n");
 	    return -1;
 	}
-	g_object_set(videosink, "host", "127.0.0.1", "port", 1236, NULL);
-	g_object_set(G_OBJECT(source), "caps", gst_caps_new_simple("video/x-raw",
-					"width", G_TYPE_INT, 640,
-					"height", G_TYPE_INT, 480, NULL), NULL);
-	g_object_set(encoder, "speed-preset", 2, "tune", 0x00000004, NULL);
+	//g_object_set(videosink, "port", NULL);
+	g_object_set(G_OBJECT(source), "port", "1234" , NULL);
+	//g_object_set(encoder, "speed-preset", 2, "tune", 0x00000004, NULL);
 
 	/* ADD TO A BIN */
 	gst_bin_add_many (GST_BIN(pipeline), source, queue1, encoder, queue2, payload, videosink, NULL);
@@ -55,7 +53,7 @@ speed-preset        : Preset name for speed/quality tradeoff options (can affect
 	
 	
 	/* LINK ELEMENTS */
-	if (gst_element_link_many(source, queue1, encoder, queue2, payload, videosink, NULL)!= TRUE){
+	if (gst_element_link_many(source, encoder, videosink, NULL)!= TRUE){
 	g_print ("Error linking elements");
 	}
 
