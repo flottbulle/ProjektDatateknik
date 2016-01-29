@@ -23,8 +23,8 @@ def button_1():
    try:
       httpServ = httplib.HTTPConnection("192.168.10.4", 80)
       httpServ.connect()
-      #httpServ.request('GET', "/casino_mode=on")
-      #httpServ.close()
+      httpServ.request('SET', "/casino_mode=on")
+      httpServ.close()
    except IOError:
 	return
 

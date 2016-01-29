@@ -85,10 +85,10 @@ speed-preset        : Preset name for speed/quality tradeoff options (can affect
 	    g_printerr ("One element could not be created. Exiting.\n");
 	    return -1;
 	}
-	g_object_set(G_OBJECT(source), "location", camip, "latency", latency, "protocols", 0x00000001, NULL);
-	g_object_set(G_OBJECT(source2), "location", camip, "latency", latency,  "protocols", 0x00000001,  NULL);
-	g_object_set(G_OBJECT(source3), "location", camip, "latency", latency, "protocols", 0x00000001,   NULL);
-	g_object_set(G_OBJECT(source4), "location", camip, "latency", latency, "protocols", 0x00000001,   NULL);
+	g_object_set(G_OBJECT(source), "location", camip, "latency", 10, "protocols", 0x00000001, NULL);
+	g_object_set(G_OBJECT(source2), "location", camip, "latency", 10,  "protocols", 0x00000001,  NULL);
+	g_object_set(G_OBJECT(source3), "location", camip, "latency", 10, "protocols", 0x00000001,   NULL);
+	g_object_set(G_OBJECT(source4), "location", camip, "latency", 10, "protocols", 0x00000001,   NULL);
 	/*g_object_set(decoder, "max-errors", "-1", NULL);
 	g_object_set(decoder2, "max-errors", "-1", NULL);
 	g_object_set(decoder3, "max-errors", "-1", NULL);
