@@ -21,12 +21,12 @@ def onKeyPress(event):
 
 def button_1():
    try:
-      httpServ = httplib.HTTPConnection("192.168.10.4", 80)
+      httpServ = httplib.HTTPConnection("192.168.10.4", 80, timeout=5)
       httpServ.connect()
-      httpServ.request('GET', "/casino_mode=on")
+      httpServ.request('POST', "set?casino_mode=on")
       httpServ.close()
-   except IOError:
-	return
+   except Exception as e:
+	print (type(e))
 
 
 def gui():
@@ -46,8 +46,8 @@ def gui():
 
 thread_1 = Thread(target = gui)
 thread_1.start()
-thread_2 = Thread(call(["./mixerh264", "0", "0", "0"]))
-thread_2.start()
+#thread_2 = Thread(call(["./mixerh264", "0", "0", "0"]))
+#thread_2.start()
 
 
 
