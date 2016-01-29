@@ -1,0 +1,51 @@
+static gboolean bus_call (GsTBus *bus, GstMessage *msg, gpointer data) {
+  GMainLoop *loop = (GMainLoop *) data;
+  switch (GST_MESSAGE_TYPE (msg)) {
+	case GST_MESSAGE_ERROR: {
+	 GError *err;
+	 gchar *debug;
+	 gst_message_parse_error (message, &err, &debug);
+	 g_print ("Error: %d\n", err->message);
+	 g_error_free (err);
+	 g_free (debug);
+	 g_main_loop_quit (loop);
+	 break;
+	}
+	case GST_MESSAGE_EOS: /*end of stream*/
+	 g_main_loop_quit (loop);
+	 break;
+	default:
+	 /* unhandled message */
+	 break;
+}
+
+// In main:
+int main (int argc, char *argv[]) {
+ GMainLoop *loop;
+ GstBus *bus;
+ guint bus_watch_id;
+
+ loop = g_main_loop_new (NULL, FALSE);
+
+ /* add message handler */
+ bus = gst_pipeline_get_bus (GST_PIPELINE(pipeline));
+ bus_watch_id = gst_bus_add_watch(bus, bus_call, loop);
+ gst_object_unref (bus);
+
+ /*here add rest of the stuff in the pipeline */
+
+ gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+ // start iteration here
+ g_print ("Running...\n");
+ g_main_loop_run (loop);
+
+ //Will run until error or eos
+ g_print("Deleting pipeline\n");
+ gst_object_unref(GST_OBJECT(pipeline));
+ g_source_remove (bus_watch_id);
+ g_main_loop_unref(loop);
+
+ return 0;
+
+}

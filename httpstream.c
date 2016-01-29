@@ -2,24 +2,23 @@
   
 int main(int argc, char *argv[]) {
 
-	GstElement *pipeline, *source, *encoder, *videomixer, *videosink, *queue1, *queue2, *payload;
+	GstElement *pipeline, *source, *decoder, *convert, *queue, *encoder, *decoder2, *depay, *videosink;
 	GstBus *bus;
 	GstMessage *msg;
-	GstPadTemplate *mixer_src_pad_template;
-	GstPad *mixer_video_pad, *sink_pad;
-	GstCaps *caps;
 	/* Initialize GStreamer */
 	gst_init (&argc, &argv);
 	
 	
 	
-	videosink = gst_element_factory_make("cluttersink", "sink");
-	source = gst_element_factory_make("udpsrc","camsrc");
-	queue1 = gst_element_factory_make("queue", "q1");
-	queue2 = gst_element_factory_make("queue", "q2");
-	videomixer = gst_element_factory_make("videomixer", "mixer");
-	encoder = gst_element_factory_make("jpegdec", "avdec");
-	payload = gst_element_factory_make("rtph264pay", "pay");
+	videosink = gst_element_factory_make("ximagesink", "sink");
+	source = gst_element_factory_make("souphttpsrc","soupsrc");
+	queue = gst_element_factory_make("queue", "q1");
+	decoder = gst_element_factory_make("jpegdec", "jpgdecoder");	
+	convert = gst_element_factory_make("videoconvert", "converter");	
+
+	encoder = gst_element_factory_make("x264enc", "h264encoder");
+	decoder2 = gst_element_factory_make("avdec_h264", "h264decoder");	
+	depay = gst_element_factory_make("rtph264depay", "depay");	
 	pipeline = gst_pipeline_new("the-pipeline");
 	
 	/*
@@ -39,36 +38,30 @@ speed-preset        : Preset name for speed/quality tradeoff options (can affect
                            (10): placebo          - placebo
 	*/
 	
-	if (!videosink || !source || !queue1 || !queue2 || !encoder || !videomixer || !payload) {
+	if (!videosink || !source || !decoder || !queue || !convert || !encoder || !decoder2 || !depay) {
 	    g_printerr ("One element could not be created. Exiting.\n");
 	    return -1;
 	}
-	//g_object_set(videosink, "port", NULL);
-	g_object_set(G_OBJECT(source), "port", "1234" , NULL);
-	//g_object_set(encoder, "speed-preset", 2, "tune", 0x00000004, NULL);
+	g_object_set(G_OBJECT(source), "location", "http://192.168.10.4/mjpeg" , NULL);
+	g_object_set(encoder, "speed-preset", 2, "tune", 0x00000004, NULL);
 
 	/* ADD TO A BIN */
-	gst_bin_add_many (GST_BIN(pipeline), source, queue1, encoder, queue2, payload, videosink, NULL);
+	gst_bin_add_many (GST_BIN(pipeline), source, decoder, convert, encoder, decoder2, depay, videosink, NULL);
 
 	
 	
 	/* LINK ELEMENTS */
-	if (gst_element_link_many(source, encoder, videosink, NULL)!= TRUE){
+	if (gst_element_link_many(source, decoder, convert, encoder, decoder2, depay, videosink, NULL)!= TRUE){
 	g_print ("Error linking elements");
 	}
 
 	
-	
-	/* 130.240.152.93 */
 	gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
 	/* Wait until error or EOS */
 	bus = gst_element_get_bus (pipeline);
 	msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
 
-	/* Release the request pads from the Tee, and unref them */
-	//gst_element_release_request_pad (videomixer, mixer_video_pad);
-	//gst_object_unref (mixer_video_pad);
 	/* Free resources */
 	if (msg != NULL)
 	gst_message_unref (msg);

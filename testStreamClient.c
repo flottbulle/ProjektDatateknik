@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
   gst_init (&argc, &argv);
   
   /* Build the pipeline */
-  pipeline = gst_parse_launch ("udpsrc port=1234 ! application/x-rtp, payload=127 ! rtph264depay ! avdec_h264 ! fpsdisplaysink sync=false text-overlay=false", NULL);
+  pipeline = gst_parse_launch ("udpsrc port=554 ! application/x-rtp, payload=127 ! rtph264depay ! avdec_h264 ! fpsdisplaysink sync=false text-overlay=false", NULL);
   
   /* Start playing */
   gst_element_set_state (pipeline, GST_STATE_PLAYING);

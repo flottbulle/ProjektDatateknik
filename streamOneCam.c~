@@ -2,7 +2,11 @@
   
 int main(int argc, char *argv[]) {
 
+<<<<<<< HEAD
 	GstElement *pipeline, *source1, *source2, *encoder, *videomixer, *videosink, *queue1, *queue2, *payload;
+=======
+	GstElement *pipeline, *source, *encoder, *videomixer, *videosink, *queue1, *queue2, *payload;
+>>>>>>> 25e48240663f37cb53220232b552db3b2973635c
 	GstBus *bus;
 	GstMessage *msg;
 	GstPadTemplate *mixer_src_pad_template;
@@ -13,6 +17,7 @@ int main(int argc, char *argv[]) {
 	
 	
 	
+<<<<<<< HEAD
 	videosink = gst_element_factory_make("udpsink", "sink");
 	source1 = gst_element_factory_make("v4l2src","camsrc");
 	source2 = gst_element_factory_make("videotestsrc", "source2");
@@ -20,6 +25,14 @@ int main(int argc, char *argv[]) {
 	queue2 = gst_element_factory_make("queue", "q2");
 	videomixer = gst_element_factory_make("videomixer", "mixer");
 	encoder = gst_element_factory_make("x264enc", "avdec");
+=======
+	videosink = gst_element_factory_make("cluttersink", "sink");
+	source = gst_element_factory_make("udpscr","camsrc");
+	queue1 = gst_element_factory_make("queue", "q1");
+	queue2 = gst_element_factory_make("queue", "q2");
+	videomixer = gst_element_factory_make("videomixer", "mixer");
+	encoder = gst_element_factory_make("jpegdec", "avdec");
+>>>>>>> 25e48240663f37cb53220232b552db3b2973635c
 	payload = gst_element_factory_make("rtph264pay", "pay");
 	pipeline = gst_pipeline_new("the-pipeline");
 	
@@ -40,6 +53,7 @@ speed-preset        : Preset name for speed/quality tradeoff options (can affect
                            (10): placebo          - placebo
 	*/
 	
+<<<<<<< HEAD
 	if (!videosink || !source1 || !source2 || !queue1 || !queue2 || !encoder || !videomixer || !payload) {
 	    g_printerr ("One element could not be created. Exiting.\n");
 	    return -1;
@@ -53,11 +67,27 @@ speed-preset        : Preset name for speed/quality tradeoff options (can affect
 
 	/* ADD TO A BIN */
 	gst_bin_add_many (GST_BIN(pipeline), source1,  queue1, encoder, queue2, payload, videosink, source2, NULL);
+=======
+	if (!videosink || !source || !queue1 || !queue2 || !encoder || !videomixer || !payload) {
+	    g_printerr ("One element could not be created. Exiting.\n");
+	    return -1;
+	}
+	//g_object_set(videosink, "port", NULL);
+	g_object_set(G_OBJECT(source), "port", "1234" , NULL);
+	//g_object_set(encoder, "speed-preset", 2, "tune", 0x00000004, NULL);
+
+	/* ADD TO A BIN */
+	gst_bin_add_many (GST_BIN(pipeline), source, queue1, encoder, queue2, payload, videosink, NULL);
+>>>>>>> 25e48240663f37cb53220232b552db3b2973635c
 
 	
 	
 	/* LINK ELEMENTS */
+<<<<<<< HEAD
 	if (gst_element_link_many(source1, queue1, encoder, queue2, payload, videosink, source2, NULL)!= TRUE){
+=======
+	if (gst_element_link_many(source, encoder, videosink, NULL)!= TRUE){
+>>>>>>> 25e48240663f37cb53220232b552db3b2973635c
 	g_print ("Error linking elements");
 	}
 
