@@ -2,14 +2,17 @@ from subprocess import call
 from threading import Thread
 import Tkinter as tk
 import time
-import urllib
-import urlparse
+#import urllib
+#import urlparse
+import urllib2
+
 
 GRID_W = "500"
 GRID_H = "500"
 
 class Gui():
    def __init__(self, GRID_W, GRID_H):
+      self.orientation = 0
       self.root = tk.Tk()
       self.root.title("Camera settings")
       self.root.geometry(GRID_W + "x" + GRID_H)
@@ -37,12 +40,19 @@ class Gui():
 
    def button_1(self):
       try:
-         self.url = "http://192.168.10.4/set?casino_mode=on"
-         self.params = {}
-         self.url_parts = list(urlparse.urlparse(self.url))
-         self.query = dict(urlparse.parse_qsl(self.url_parts[4]))
-         self.query.update(self.params)
-         self.url_parts[4] = urllib.urlencode(self.query) 
+         if self.orientation == 270:
+	    self.orientation = 0
+         else:
+            self.orientation += 90
+         
+         self.url = "http://192.168.10.4/set?rotate=%s" % self.orientation
+         self.response = urllib2.urlopen('%s' % self.url, timeout = 2) 
+	 print self.response
+         #self.params = {}
+         #self.url_parts = list(urlparse.urlparse(self.url))
+         #self.query = dict(urlparse.parse_qsl(self.url_parts[4]))
+         #self.query.update(self.params)
+         #self.url_parts[4] = urllib.urlencode(self.query) 
 
          #self.httpServ = httplib.HTTPConnection("192.168.10.4", 80, timeout=5)
          #self.httpServ.connect()
