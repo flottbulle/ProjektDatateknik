@@ -38,8 +38,11 @@ class Gui():
    def button_1(self):
       try:
          self.url = "http://192.168.10.4/set?casino_mode=on"
+         self.params = {}
          self.url_parts = list(urlparse.urlparse(self.url))
-         
+         self.query = dict(urlparse.parse_qsl(self.url_parts[4]))
+         self.query.update(self.params)
+         self.url_parts[4] = urllib.urlencode(self.query) 
 
          #self.httpServ = httplib.HTTPConnection("192.168.10.4", 80, timeout=5)
          #self.httpServ.connect()
