@@ -1,0 +1,124 @@
+#include <gst/gst.h>
+
+int main(int argc, char *argv[]) {
+  GstElement *pipeline, *source, *sink;
+  GstElement *source2, *mixer;
+
+  GstPadTemplate *mixer_pad_template;
+  GstPad *mixer_src1_pad, *mixer_src2_pad;
+  GstPad *src1_pad, *src2_pad;  
+
+  GstBus *bus;
+  GstMessage *msg;
+  GstStateChangeReturn ret;
+   
+  /* Initialize GStreamer */
+  gst_init (&argc, &argv);
+    
+  /* Create the elements */
+  source = gst_element_factory_make ("videotestsrc", "source");
+  source2 = gst_element_factory_make ("videotestsrc", "source2");
+
+  sink = gst_element_factory_make ("autovideosink", "sink");
+  //sink2 = gst_element_factory_make ("autovideosink", "sink2");
+
+  mixer = gst_element_factory_make("videomixer", "mixer");
+    
+  /* Create the empty pipeline */
+  pipeline = gst_pipeline_new ("test-pipeline");
+    
+  if (!pipeline || !source || !sink) {
+    g_printerr ("Not all elements could be created.\n");
+    return -1;
+  }
+   
+  /* Build the pipeline */
+  gst_bin_add_many (GST_BIN (pipeline), source, sink, source2, mixer, NULL);
+
+  if (gst_element_link (mixer, sink) != TRUE) {
+    g_printerr ("Elements could not be linked.\n");
+    gst_object_unref (pipeline);
+    return -1;
+  }
+
+  if ( !(mixer_pad_template = gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS (mixer), "sink_%u"))) {
+    gst_object_unref (pipeline);
+    g_critical ("Unable to get pad template");
+    return 0;  
+  }
+
+  mixer_src1_pad = gst_element_request_pad (mixer, mixer_pad_template, NULL, NULL);
+  g_print ("Obtained request pad %s for src1 branch.\n", gst_pad_get_name (mixer_src1_pad));
+  src1_pad = gst_element_get_static_pad (source, "src");
+
+  mixer_src2_pad = gst_element_request_pad (mixer, mixer_pad_template, NULL, NULL);
+  g_print ("Obtained request pad %s for src2 branch.\n", gst_pad_get_name (mixer_src2_pad));
+  src2_pad = gst_element_get_static_pad (source2, "src");
+
+
+   /* Link the tee to the queue 1 */
+  if (gst_pad_link (src1_pad, mixer_src1_pad) != GST_PAD_LINK_OK ){
+ 
+    g_critical ("Mixer for src1 could not be linked.\n");
+    gst_object_unref (pipeline);
+    return 0;
+
+  }
+ 
+  /* Link the tee to the queue 2 */
+  if (gst_pad_link (src2_pad, mixer_src2_pad) != GST_PAD_LINK_OK) {
+
+    g_critical ("Mixer for src2 could not be linked.\n");
+    gst_object_unref (pipeline);
+    return 0;
+  }
+  
+  /* Modify the source's properties */
+  g_object_set (source, "pattern", 0, NULL);
+  g_object_set (source2, "pattern", 0, NULL);
+
+  g_object_set(G_OBJECT(mixer_src1_pad), "xpos", 0, "ypos", 0, "alpha", 0, NULL); // Not working
+  g_object_set(G_OBJECT(mixer_src2_pad), "xpos", 0, "ypos", 0, NULL); // Not working
+   
+  /* Start playing */
+  ret = gst_element_set_state (pipeline, GST_STATE_PLAYING);
+  if (ret == GST_STATE_CHANGE_FAILURE) {
+    g_printerr ("Unable to set the pipeline to the playing state.\n");
+    gst_object_unref (pipeline);
+    return -1;
+  }
+   
+  /* Wait until error or EOS */
+  bus = gst_element_get_bus (pipeline);
+  msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
+   
+  /* Parse message */
+  if (msg != NULL) {
+    GError *err;
+    gchar *debug_info;
+     
+    switch (GST_MESSAGE_TYPE (msg)) {
+      case GST_MESSAGE_ERROR:
+        gst_message_parse_error (msg, &err, &debug_info);
+        g_printerr ("Error received from element %s: %s\n", GST_OBJECT_NAME (msg->src), err->message);
+        g_printerr ("Debugging information: %s\n", debug_info ? debug_info : "none");
+        g_clear_error (&err);
+        g_free (debug_info);
+        break;
+      case GST_MESSAGE_EOS:
+        g_print ("End-Of-Stream reached.\n");
+        break;
+      default:
+        /* We should not reach here because we only asked for ERRORs and EOS */
+        g_printerr ("Unexpected message received.\n");
+        break;
+    }
+    gst_message_unref (msg);
+  }
+   
+  /* Free resources */
+  gst_object_unref (bus);
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_object_unref (pipeline);
+  return 0;
+}
