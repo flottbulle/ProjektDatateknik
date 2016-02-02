@@ -61,6 +61,17 @@ static void on_pad_added (GstElement *element, GstPad *pad, gpointer data) {
 
 }
 
+/
+*
+note that the demuxer will be linked to the decoder dynamically.
+The reason is that Ogg may contain various streams (for example audio and video). 
+The source pad(s) will be created at run time,
+by the demuxer when it detects the amount and nature of streams.
+Therefore we connect a callback function which will be executed
+when the "pad-added" is emitted.
+*
+/
+
 static void cb_new_pad (GstElement *element, GstPad *pad, gpointer data) {
 
  gchar *name;
