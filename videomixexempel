@@ -1,0 +1,75 @@
+#include <gst/gst.h>
+
+int main(int argc, char *argv[]) {
+	GstElement *pipeline, *source, *source1, *source2, *sink, *filter, *filter1, *filter2, *mixer;
+	GstCaps *caps_bg, *caps1, *caps2;
+	GstPad *pad0, *pad1, *pad2, *filter_src_pad, *filter1_src_pad, *filter2_src_pad;
+	GstBus *bus;
+	GstMessage *msg;
+	GMainLoop *loop;
+	gst_init (&argc, &argv);
+	pipeline = gst_pipeline_new("mypipeline");
+	
+	source = gst_element_factory_make("videotestsrc", "video-source-bg");
+	source1 = gst_element_factory_make("videotestsrc", "video-source1");
+	g_object_set(G_OBJECT(source1), "pattern", 0, NULL);
+	source2 = gst_element_factory_make("videotestsrc", "video-source2");
+	g_object_set(G_OBJECT(source2), "pattern", 3, NULL);
+	sink = gst_element_factory_make("xvimagesink", "video-output");
+
+	//caps
+	caps_bg = gst_caps_new_simple ("video/x-raw", "format", G_TYPE_STRING, "I420", "width", G_TYPE_INT, 1000, "height", G_TYPE_INT, 1000, "framerate", GST_TYPE_FRACTION, 25, 1, NULL);
+	filter = gst_element_factory_make("capsfilter", "filter-bg");
+	g_object_set(G_OBJECT(filter), "caps", caps_bg, NULL);
+	filter_src_pad = gst_element_get_static_pad(filter, "src");
+	
+	caps1 = gst_caps_new_simple ("video/x-raw", "format", G_TYPE_STRING, "I420", "width", G_TYPE_INT, 400, "height", G_TYPE_INT, 400, "framerate", GST_TYPE_FRACTION, 25, 1, NULL);
+	filter1 = gst_element_factory_make("capsfilter", "filter1");
+	g_object_set(G_OBJECT(filter1), "caps", caps1, NULL);
+	filter1_src_pad = gst_element_get_static_pad(filter1, "src");
+	
+	caps2 = gst_caps_new_simple ("video/x-raw", "format", G_TYPE_STRING, "I420", "width", G_TYPE_INT, 400, "height", G_TYPE_INT, 400, "framerate", GST_TYPE_FRACTION, 25, 1, NULL);
+	filter2 = gst_element_factory_make("capsfilter", "filter2");
+	g_object_set(G_OBJECT(filter2), "caps", caps2, NULL);
+	filter2_src_pad = gst_element_get_static_pad(filter2, "src");
+	
+	//mixer
+	mixer = gst_element_factory_make("videomixer", "mixer");
+	pad0 = gst_element_get_request_pad(mixer, "sink_0");
+	pad1 = gst_element_get_request_pad(mixer, "sink_1");
+	pad2 = gst_element_get_request_pad(mixer, "sink_2");
+	
+	//position
+	g_object_set(G_OBJECT(pad0), "xpos", 0, "ypos", 0, "alpha", 0, NULL);
+	g_object_set(G_OBJECT(pad1), "xpos", 0, "ypos", 0, NULL);
+	g_object_set(G_OBJECT(pad2), "xpos", 410, "ypos", 410, NULL);
+	
+	//bin
+	gst_bin_add_many (GST_BIN(pipeline), source, filter, mixer, sink, NULL);
+	gst_bin_add_many (GST_BIN(pipeline), source1, filter1, NULL);
+	gst_bin_add_many (GST_BIN(pipeline), source2, filter2, NULL);	
+	gst_element_link_many(source,filter, NULL);
+	gst_element_link_many(source1,filter1, NULL);
+	gst_element_link_many(source2,filter2, NULL);
+	gst_pad_link (filter_src_pad, pad0);
+	gst_pad_link (filter1_src_pad, pad1);
+	gst_pad_link (filter2_src_pad, pad2);
+	
+	gst_element_link_many(mixer,sink, NULL);
+
+	gst_element_set_state(pipeline, GST_STATE_PLAYING);
+	loop = g_main_loop_new(NULL, FALSE);
+	g_main_loop_run(loop);
+
+	bus = gst_element_get_bus (pipeline);
+	msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
+
+	/* Free resources */
+	if (msg != NULL)
+	gst_message_unref (msg);
+	gst_object_unref (bus);
+	gst_element_set_state (pipeline, GST_STATE_NULL);
+	gst_object_unref (pipeline);
+	g_main_loop_unref (loop);
+	return 0;
+}

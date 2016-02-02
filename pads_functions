@@ -1,0 +1,94 @@
+/* What want to do:
+   Creates pads for the sinks on mixer, get pad from mixer: (gst_get_request_pad), set properties if needed
+   Link each source to each pad created, src_pad_link stuff. Then finish with element_link_many(mixer, sink)
+   
+   pad0 = mixer.get_pad("sink_0")
+   pad0.set_propety("xpos",0)
+   pad0.set_property("ypos",0)
+   pad0.set_propety("alpha",0) <-- not needed on others
+
+   filter_src_pad.link(pad0)
+
+   gst.element_link_many(mixer,sink)
+
+*/
+
+static void new_src_request_pad (GstElement *element) {
+
+	GstPad * pad;
+        gchar *name;
+        
+        pad = gst_element_get_request_pad (element, "src%d");
+	name = gst_pad_get_name (pad);
+	g_print ("A new request pad %s was created\n", name);
+	g_free (name);
+
+	gst_pad_link (element, pad);
+
+        gst_object_unref (GST_OBJECT(pad));
+}
+
+static void new_sink_request_pad (GstElement *mixer, GstPad *pad) {
+
+	GstPad *sinkpad;
+        gchar *name;
+        
+        sinkpad = gst_element_get_request_pad (mixer, "sink%d");
+	name = gst_pad_get_name (sinkpad);
+	g_print ("A new request pad %s was created\n", name);
+	g_free (name);
+
+	gst_pad_link (pad, sinkpad);
+
+        gst_object_unref (GST_OBJECT(sinkpad));
+}
+
+
+
+static void on_pad_added (GstElement *element, GstPad *pad, gpointer data) {
+
+ GstPad *sinkpad;
+ GstElement *decoder = (GstElement *) data;
+
+ /* link pad with decoder */
+ g_print ("Dynamic pad created, linking demuxer/decoder\n");
+ 
+ sinkpad = gst_element_get_static_pad (decoder, "sink");
+
+ gst_pad_link (pad, sinkpad);
+
+ gst_object_unref (sinkpad);
+
+}
+
+/
+*
+note that the demuxer will be linked to the decoder dynamically.
+The reason is that Ogg may contain various streams (for example audio and video). 
+The source pad(s) will be created at run time,
+by the demuxer when it detects the amount and nature of streams.
+Therefore we connect a callback function which will be executed
+when the "pad-added" is emitted.
+*
+/
+
+static void cb_new_pad (GstElement *element, GstPad *pad, gpointer data) {
+
+ gchar *name;
+ name = gst_pad_get_name (pad);
+ g_print ("A new pad %s was created\n", name);
+ g_free (name);
+
+ /* setup a new pad link */
+
+}
+
+//in main
+
+ g_signal_connect (demux, "pad-added", G_CALLBACK (cb_new_pad), NULL);
+
+ g_signal_connect (demuxer, "pad_added", G_CALLBACK (on_pad_added), decoder);
+
+// ------------- //
+
+// new output pad from "tee" element
