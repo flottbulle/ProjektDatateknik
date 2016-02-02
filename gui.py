@@ -18,6 +18,7 @@ class Gui():
       self.frame.pack(fill=tk.X, side=tk.BOTTOM)
       
       self.forward = tk.Button(self.frame, text = "Forward", command= lambda: self.button("forward"))
+      self.load = tk.Button(self.frame, text = " Load ", command= lambda: self.button("load"))
       self.reverse = tk.Button(self.frame, text = "Reverse", command= lambda: self.button("reverse"))
       self.left = tk.Button(self.frame, text = "Left", command= lambda: self.button("left"))
       self.right = tk.Button(self.frame, text = "Right", command= lambda: self.button("right"))
@@ -25,7 +26,10 @@ class Gui():
       self.frame.columnconfigure(0, weight=1)
       self.frame.columnconfigure(1, weight=1)
 
+
+
       self.forward.grid(row=0, column=1)
+      self.load.grid(row=1, column=1)
       self.reverse.grid(row=2, column=1)
       self.left.grid(row=1, column=0)
       self.right.grid(row=1, column=2)
@@ -61,11 +65,19 @@ class Gui():
             self.orientation += 90
          
 	 if direction == "forward":
-            self.url = "http://192.168.10.4/set?rotate=%s" % self.orientation
+            self.url1 = "http://192.168.10.4/set?qp=16"
+            self.url2 = "http://192.168.10.2/set?qp=32"
+            self.url3 = "http://192.168.10.4/set?res=full"
+            self.url4 = "http://192.168.10.2/set?resolution=half"
+	    
 
          elif direction == "reverse":
-	    self.url = "http://192.168.10.4/set?rotate=%s" % self.orientation
- 
+            self.url1 = "http://192.168.10.4/set?qp=32"
+            self.url2 = "http://192.168.10.2/set?qp=16"
+            self.url3 = "http://192.168.10.4/set?res=half"
+            self.url4 = "http://192.168.10.2/set?res=full"
+
+
          elif direction == "left":
 	    self.url = "http://192.168.10.2/set?rotate=%s" % self.orientation
 
@@ -75,7 +87,10 @@ class Gui():
 	 else:
 	    return
 
-         self.response = urllib2.urlopen('%s' % self.url, timeout = 2) 
+         self.response1 = urllib2.urlopen('%s' % self.url1, timeout = 2)
+	 self.response2 = urllib2.urlopen('%s' % self.url2, timeout = 2)
+         self.response3 = urllib2.urlopen('%s' % self.url3, timeout = 2)
+	 self.response4 = urllib2.urlopen('%s' % self.url4, timeout = 2) 
          
       except Exception as e:
          print (type(e))
