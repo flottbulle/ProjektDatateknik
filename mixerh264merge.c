@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
 *source2, *videosink, *decoder2, *depay2, *videosink2, 
 *source3, *decoder3, *depay3, *videosink3, 
 *source4, *decoder4, *depay4, *videosink4, 
-*mixer, *filter, *filter1, *convert;
+*mixer, *filter, *filter2, *filter3, *filter4, *convert;
 
 	GstPad *mixer_sink_pad, *mixer_sink_pad2, *filter_src_pad, *filter_src_pad2, *mixer_sink_pad3, *mixer_sink_pad4, *filter_src_pad3, *filter_src_pad4;
 	GstBus *bus;
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 	gint DECODESKIP = 2;
 	camip="rtsp://192.168.10.4/h264.sdp";
 	camip2="rtsp://192.168.10.2/h264.sdp";
-	GstCaps *caps1, *caps_bg;
+	GstCaps *caps, *caps2, *caps3, *caps4;
 	gchar *name;
 	/* Initialize GStreamer */
 	gst_init (&argc, &argv);
@@ -96,19 +96,28 @@ int main(int argc, char *argv[]) {
 	mixer = gst_element_factory_make("videomixer", "mixer");
 
 
-	caps_bg = gst_caps_new_simple ("video/x-raw", NULL);
-	filter = gst_element_factory_make("capsfilter", "filter-bg");
-	g_object_set(G_OBJECT(filter), "caps", caps_bg, NULL);
+
 	
 	
-	caps1 = gst_caps_new_simple ("video/x-raw", NULL);
-	filter1 = gst_element_factory_make("capsfilter", "filter1");
-	g_object_set(G_OBJECT(filter1), "caps", caps1, NULL);
+	caps = gst_caps_new_simple ("video/x-raw", "width", G_TYPE_INT, 1000, "height", G_TYPE_INT, 1000, NULL);
+	filter = gst_element_factory_make("capsfilter", "filter1");
+	g_object_set(G_OBJECT(filter), "caps", caps, NULL);
 	
+	caps2 = gst_caps_new_simple ("video/x-raw", "width", G_TYPE_INT, 1000, "height", G_TYPE_INT, 1000, NULL);
+	filter2 = gst_element_factory_make("capsfilter", "filter2");
+	g_object_set(G_OBJECT(filter2), "caps", caps2, NULL);
+	
+	caps3 = gst_caps_new_simple ("video/x-raw", "width", G_TYPE_INT, 1000, "height", G_TYPE_INT, 1000, NULL);
+	filter3 = gst_element_factory_make("capsfilter", "filter3");
+	g_object_set(G_OBJECT(filter3), "caps", caps3, NULL);
+
+	caps4 = gst_caps_new_simple ("video/x-raw", "width", G_TYPE_INT, 1000, "height", G_TYPE_INT, 1000, NULL);
+	filter4 = gst_element_factory_make("capsfilter", "filter4");
+	g_object_set(G_OBJECT(filter4), "caps", caps4, NULL);
 
 	pipeline = gst_pipeline_new("the-pipeline");
 	
-	if (!videosink || !source || !decoder|| !depay || !source2 || !decoder2 || !depay2 || !videosink2 || !source3 || !decoder3 || !depay3 || !videosink3 || !source4 || !decoder4 || !depay4 || !videosink4 || !filter || !filter1) {
+	if (!videosink || !source || !decoder|| !depay || !source2 || !decoder2 || !depay2 || !videosink2 || !source3 || !decoder3 || !depay3 || !videosink3 || !source4 || !decoder4 || !depay4 || !videosink4 || !filter || !filter2 || !filter3 || !filter4) {
 	    g_printerr ("One element could not be created. Exiting.\n");
 	    return -1;
 	}
@@ -127,10 +136,10 @@ int main(int argc, char *argv[]) {
 	   "height", G_TYPE_INT, 1080,
 	   NULL);*/
 	/* ADD TO A BIN */
-	gst_bin_add_many (GST_BIN(pipeline), source, decoder, depay, mixer, convert, videosink, NULL);
-	gst_bin_add_many (GST_BIN(pipeline), source2, decoder2, depay2, NULL);
-	gst_bin_add_many (GST_BIN(pipeline), source3, decoder3, depay3, NULL);
-	gst_bin_add_many (GST_BIN(pipeline), source4, decoder4, depay4, NULL);
+	gst_bin_add_many (GST_BIN(pipeline), source, decoder, depay, filter, mixer, convert, videosink, NULL);
+	gst_bin_add_many (GST_BIN(pipeline), source2, decoder2, depay2, filter2,  NULL);
+	gst_bin_add_many (GST_BIN(pipeline), source3, decoder3, depay3, filter3, NULL);
+	gst_bin_add_many (GST_BIN(pipeline), source4, decoder4, depay4, filter4, NULL);
 	
 	/* LINK ELEMENTS */
 	if (!(gst_element_link_many(depay, decoder, NULL)) || 
@@ -142,7 +151,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	
-	if(!gst_element_link_many(mixer, videosink, NULL)){
+	if(!gst_element_link_many(mixer, convert, videosink, NULL)){
 		g_print("error linking mixer with sink");
 		return -1;
 	}
@@ -240,9 +249,9 @@ mixer_sink_pad_template = gst_element_class_get_pad_template (GST_ELEMENT_GET_CL
 
 	g_object_set(G_OBJECT(mixer), "background", 3, NULL);
 	g_object_set(G_OBJECT(mixer_sink_pad), "xpos", 0, "ypos", 0, NULL);
-	g_object_set(G_OBJECT(mixer_sink_pad2), "xpos", 500, "ypos", 0, NULL);
+	g_object_set(G_OBJECT(mixer_sink_pad2), "xpos", 960, "ypos", 0, NULL);
 	g_object_set(G_OBJECT(mixer_sink_pad3), "xpos", 0, "ypos", 500, NULL);
-	g_object_set(G_OBJECT(mixer_sink_pad4), "xpos", 500, "ypos", 500, NULL);
+	g_object_set(G_OBJECT(mixer_sink_pad4), "xpos", 960, "ypos", 500, NULL);
 	
 	
 	
