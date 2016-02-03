@@ -66,16 +66,16 @@ class Gui():
          
 	 if direction == "forward":
             self.url1 = "http://192.168.10.4/set?qp=16"
-            self.url2 = "http://192.168.10.2/set?qp=32"
+            self.url2 = "http://192.168.10.2/set?qp=16"
             self.url3 = "http://192.168.10.4/set?res=full"
-            self.url4 = "http://192.168.10.2/set?resolution=half"
+            self.url4 = "http://192.168.10.2/set?resolution=full"
 	    
 
          elif direction == "reverse":
             self.url1 = "http://192.168.10.4/set?qp=32"
-            self.url2 = "http://192.168.10.2/set?qp=16"
+            self.url2 = "http://192.168.10.2/set?qp=32"
             self.url3 = "http://192.168.10.4/set?res=half"
-            self.url4 = "http://192.168.10.2/set?res=full"
+            self.url4 = "http://192.168.10.2/set?res=half"
 
 
          elif direction == "left":

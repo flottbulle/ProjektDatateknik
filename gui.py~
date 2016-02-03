@@ -66,9 +66,9 @@ class Gui():
          
 	 if direction == "forward":
             self.url1 = "http://192.168.10.4/set?qp=16"
-            self.url2 = "http://192.168.10.2/set?qp=32"
+            self.url2 = "http://192.168.10.2/set?qp=16"
             self.url3 = "http://192.168.10.4/set?res=full"
-            self.url4 = "http://192.168.10.2/set?resolution=half"
+            self.url4 = "http://192.168.10.2/set?resolution=full"
 	    
 
          elif direction == "reverse":
@@ -87,10 +87,10 @@ class Gui():
 	 else:
 	    return
 
-         self.response = urllib2.urlopen('%s' % self.url1, timeout = 2)
-	 self.response = urllib2.urlopen('%s' % self.url2, timeout = 2)
-         self.response = urllib2.urlopen('%s' % self.url3, timeout = 2)
-	 self.response = urllib2.urlopen('%s' % self.url4, timeout = 2) 
+         self.response1 = urllib2.urlopen('%s' % self.url1, timeout = 2)
+	 self.response2 = urllib2.urlopen('%s' % self.url2, timeout = 2)
+         self.response3 = urllib2.urlopen('%s' % self.url3, timeout = 2)
+	 self.response4 = urllib2.urlopen('%s' % self.url4, timeout = 2) 
          
       except Exception as e:
          print (type(e))
