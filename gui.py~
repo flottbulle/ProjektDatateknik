@@ -27,8 +27,8 @@ class Gui():
       self.right = tk.Button(self.frame, text = "Right", command= lambda: self.button("right"))
       
 
-      self.toggle = tk.Button(self.frame, text = "Auto/Man", command= lambda: self.toggleMode())
-      self.all = tk.Button(self.frame, text = "Auto/Man", command= lambda: self.camSelector("all"))
+      self.toggle = tk.Button(self.frame, text = "Manual", command= lambda: self.toggleMode())
+      self.all = tk.Button(self.frame, text = "All", command= lambda: self.camSelector("all"))
       self.fw = tk.Button(self.frame, text = "^", command= lambda: self.camSelector("fw"))
       self.ri = tk.Button(self.frame, text = ">", command= lambda: self.camSelector("ri"))
       self.re = tk.Button(self.frame, text = "v", command= lambda: self.camSelector("re"))    
@@ -124,49 +124,60 @@ class Gui():
             self.orientation += 90
          
          if not self.manualMode:
+	    url_list = []
 	    if direction == "forward":
-               self.url1 = "http://192.168.10.4/set?qp=16"
-               self.url2 = "http://192.168.10.2/set?qp=16"
-               self.url3 = "http://192.168.10.4/set?res=full"
-               self.url4 = "http://192.168.10.2/set?resolution=full"
-	    
+               url_list.append("http://192.168.10.4/set?qp=16")
+               url_list.append("http://192.168.10.2/set?qp=16")
+               url_list.append("http://192.168.10.4/set?res=full")
+               url_list.append("http://192.168.10.2/set?res=full")
 
             elif direction == "reverse":
-               self.url1 = "http://192.168.10.4/set?qp=32"
-               self.url2 = "http://192.168.10.2/set?qp=32"
-               self.url3 = "http://192.168.10.4/set?res=half"
-               self.url4 = "http://192.168.10.2/set?res=half"
+               url_list.append("http://192.168.10.4/set?qp=32")
+               url_list.append("http://192.168.10.2/set?qp=32")
+               url_list.append("http://192.168.10.4/set?res=half")
+               url_list.append("http://192.168.10.2/set?res=half")
 
-
-            elif direction == "left":
-	       self.url = "http://192.168.10.2/set?rotate=%s" % self.orientation
-
+            
+	    elif direction == "left":
+	       url_list.append("http://192.168.10.2/set?rotate=%s" % self.orientation)
+	      
 	    elif direction == "right":
-	       self.url = "http://192.168.10.2/set?rotate=%s" % self.orientation
+	       url_list.append("http://192.168.10.2/set?rotate=%s" % self.orientation)
+	       #self.response1 = urllib2.urlopen('%s' % self.url1, timeout = 2)
 
 	    else:
 	       return
-
-            self.response1 = urllib2.urlopen('%s' % self.url1, timeout = 2)
-	    self.response2 = urllib2.urlopen('%s' % self.url2, timeout = 2)
-            self.response3 = urllib2.urlopen('%s' % self.url3, timeout = 2)
-	    self.response4 = urllib2.urlopen('%s' % self.url4, timeout = 2) 
+	     
+ 	    self.create_url_threads(url_list)
          
       except Exception as e:
          print (type(e))
 
 
+   def create_url_threads(self, url_list):
+      for url in url_list:
+         threads = []
+         thread = Thread(target = self.execute_url, args = [url])
+         thread.setDaemon(True)
+         thread.start()
+         threads.append(thread)
+
+      for thread in threads:
+         thread.join()
+
+ 
+   def execute_url(self, url):
+      print url
+      urllib2.urlopen(url, timeout = 2)
 
    #root.bind_all('<Key>', onKeyPress)
 
 
-
-
-gui_1 = Gui(GRID_W, GRID_H)
-thread_1 = Thread(target = gui_1)
-thread_1.start()
 #thread_2 = Thread(call(["./mixerh264", "0", "0", "0"]))
 #thread_2.start()
+
+gui = Gui(GRID_W, GRID_H)
+
 
 
 
