@@ -16,8 +16,8 @@ cb_new_pad (GstElement *element,
 
 	gst_object_unref (sinkpad);
 }
-
-static void new_sink_request_pad (GstElement *mixer, GstElement *filter, gchar *str) {
+/*
+static void new_sink_request_pad (GstElement *mixer, GstElement *filter) {
 	g_print("\n This method is now running! \n");
 	GstPad *sinkpad, *srcpad;
         gchar *name;
@@ -25,11 +25,12 @@ static void new_sink_request_pad (GstElement *mixer, GstElement *filter, gchar *
 	
 	mixer_sink_pad_template = gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS    (mixer), "sink_%u");
 	sinkpad = gst_element_request_pad (mixer, mixer_sink_pad_template, NULL, NULL);
-        
+        g_object_set(G_OBJECT(sinkpad), "xpos", 0, "ypos", 0, NULL);
 	name = gst_pad_get_name (sinkpad);
 	g_print ("A new request pad %s was created\n", name);
 	g_free (name);
 	
+
 	srcpad = gst_element_get_static_pad(filter, "src");
 	name = gst_pad_get_name (srcpad);
 	g_print ("A new static source pad %s was created\n", name);
@@ -42,7 +43,8 @@ static void new_sink_request_pad (GstElement *mixer, GstElement *filter, gchar *
 	}
 
        	gst_object_unref (GST_OBJECT(sinkpad));
-}
+	gst_object_unref (GST_OBJECT(srcpad));
+}*/
 
 
 
@@ -52,25 +54,25 @@ int main(int argc, char *argv[]) {
 *source2, *videosink, *decoder2, *depay2, *videosink2, 
 *source3, *decoder3, *depay3, *videosink3, 
 *source4, *decoder4, *depay4, *videosink4, 
-*mixer, *filter, *filter1;
+*mixer, *filter, *filter2, *filter3, *filter4, *convert;
 
-	GstPad *mixer_sink_pad, *mixer_sink_pad2, *src_pad, *filter_src_pad, *filter_src_pad2;
+	GstPad *mixer_sink_pad, *mixer_sink_pad2, *filter_src_pad, *filter_src_pad2, *mixer_sink_pad3, *mixer_sink_pad4, *filter_src_pad3, *filter_src_pad4;
 	GstBus *bus;
 	GstMessage *msg;
 	GMainLoop *loop;
 	gchar *camip, *camip2;
-	gint LATENCY = 40;
-	gint DECODESKIP = 1;
+	gint LATENCY = 50;
+	gint DECODESKIP = 2;
 	camip="rtsp://192.168.10.4/h264.sdp";
 	camip2="rtsp://192.168.10.2/h264.sdp";
-	GstCaps *caps1, *caps_bg;
+	GstCaps *caps, *caps2, *caps3, *caps4;
 	gchar *name;
 	/* Initialize GStreamer */
 	gst_init (&argc, &argv);
 	
 	
 	/* Create Elements for pipeline	*/
-	videosink = gst_element_factory_make("autovideosink", "sink");
+	videosink = gst_element_factory_make("ximagesink", "sink");
 	source = gst_element_factory_make("rtspsrc","src_1");
 	decoder = gst_element_factory_make("avdec_h264", "h264decoder");	
 	depay = gst_element_factory_make("rtph264depay", "depayload");	
@@ -90,39 +92,32 @@ int main(int argc, char *argv[]) {
 	decoder4 = gst_element_factory_make("avdec_h264", "h264decoder4");	
 	depay4 = gst_element_factory_make("rtph264depay", "depayload4");	
 	
+	convert = gst_element_factory_make("videoconvert", "converter");
 	mixer = gst_element_factory_make("videomixer", "mixer");
 
 
-	caps_bg = gst_caps_new_simple ("video/x-raw", "width", G_TYPE_INT, 1000, "height", G_TYPE_INT, 1000, "framerate", GST_TYPE_FRACTION, 25, 1, NULL);
-	filter = gst_element_factory_make("capsfilter", "filter-bg");
-	g_object_set(G_OBJECT(filter), "caps", caps_bg, NULL);
+
 	
 	
-	caps1 = gst_caps_new_simple ("video/x-raw", "width", G_TYPE_INT, 400, "height", G_TYPE_INT, 400, "framerate", GST_TYPE_FRACTION, 25, 1, NULL);
-	filter1 = gst_element_factory_make("capsfilter", "filter1");
-	g_object_set(G_OBJECT(filter1), "caps", caps1, NULL);
+	caps = gst_caps_new_simple ("video/x-raw", "width", G_TYPE_INT, 1000, "height", G_TYPE_INT, 1000, NULL);
+	filter = gst_element_factory_make("capsfilter", "filter1");
+	g_object_set(G_OBJECT(filter), "caps", caps, NULL);
 	
+	caps2 = gst_caps_new_simple ("video/x-raw", "width", G_TYPE_INT, 1000, "height", G_TYPE_INT, 1000, NULL);
+	filter2 = gst_element_factory_make("capsfilter", "filter2");
+	g_object_set(G_OBJECT(filter2), "caps", caps2, NULL);
+	
+	caps3 = gst_caps_new_simple ("video/x-raw", "width", G_TYPE_INT, 1000, "height", G_TYPE_INT, 1000, NULL);
+	filter3 = gst_element_factory_make("capsfilter", "filter3");
+	g_object_set(G_OBJECT(filter3), "caps", caps3, NULL);
+
+	caps4 = gst_caps_new_simple ("video/x-raw", "width", G_TYPE_INT, 1000, "height", G_TYPE_INT, 1000, NULL);
+	filter4 = gst_element_factory_make("capsfilter", "filter4");
+	g_object_set(G_OBJECT(filter4), "caps", caps4, NULL);
 
 	pipeline = gst_pipeline_new("the-pipeline");
-
-	/*
-speed-preset        : Preset name for speed/quality tradeoff options (can affect decode compatibility - impose restrictions separately for your target decoder)
-                        flags: readable, writable
-                        Enum "GstX264EncPreset" Default: 6, "medium"
-                           (0): None             - No preset
-                           (1): ultrafast        - ultrafast
-                           (2): superfast        - superfast
-                           (3): veryfast         - veryfast
-                           (4): faster           - faster
-                           (5): fast             - fast
-                           (6): medium           - medium
-                           (7): slow             - slow
-                           (8): slower           - slower
-                           (9): veryslow         - veryslow
-                           (10): placebo          - placebo
-	*/
 	
-	if (!videosink || !source || !decoder|| !depay || !source2 || !decoder2 || !depay2 || !videosink2 || !source3 || !decoder3 || !depay3 || !videosink3 || !source4 || !decoder4 || !depay4 || !videosink4) {
+	if (!videosink || !source || !decoder|| !depay || !source2 || !decoder2 || !depay2 || !videosink2 || !source3 || !decoder3 || !depay3 || !videosink3 || !source4 || !decoder4 || !depay4 || !videosink4 || !filter || !filter2 || !filter3 || !filter4) {
 	    g_printerr ("One element could not be created. Exiting.\n");
 	    return -1;
 	}
@@ -141,20 +136,30 @@ speed-preset        : Preset name for speed/quality tradeoff options (can affect
 	   "height", G_TYPE_INT, 1080,
 	   NULL);*/
 	/* ADD TO A BIN */
-	gst_bin_add_many (GST_BIN(pipeline), source, decoder, depay, videosink, filter, filter1, mixer, NULL);
-	gst_bin_add_many (GST_BIN(pipeline), source2, decoder2, depay2, videosink2, NULL);
-	gst_bin_add_many (GST_BIN(pipeline), source3, decoder3, depay3, videosink3, NULL);
-	gst_bin_add_many (GST_BIN(pipeline), source4, decoder4, depay4, videosink4, NULL);
+	gst_bin_add_many (GST_BIN(pipeline), source, decoder, depay, filter, mixer, convert, videosink, NULL);
+	gst_bin_add_many (GST_BIN(pipeline), source2, decoder2, depay2, filter2,  NULL);
+	gst_bin_add_many (GST_BIN(pipeline), source3, decoder3, depay3, filter3, NULL);
+	gst_bin_add_many (GST_BIN(pipeline), source4, decoder4, depay4, filter4, NULL);
 	
 	/* LINK ELEMENTS */
-	if (!(gst_element_link_many(depay, decoder, filter, NULL)) || 
-!(gst_element_link_many(depay2, decoder2, filter1, NULL)) || 
+	if (!(gst_element_link_many(depay, decoder, NULL)) || 
+!(gst_element_link_many(depay2, decoder2, NULL)) || 
 !(gst_element_link_many(depay3, decoder3, NULL)) || 
 !(gst_element_link_many(depay4, decoder4, NULL))){
 	g_print ("Error linking elements");
   	return -1;
 	}
 	
+	
+	if(!gst_element_link_many(mixer, convert, videosink, NULL)){
+		g_print("error linking mixer with sink");
+		return -1;
+	}
+		else{
+		g_print("\nmixer linked with videosink \n");
+	}
+
+
 	 /* listen for newly created pads */
  	g_signal_connect (source, "pad-added", G_CALLBACK (cb_new_pad), depay);	
 	g_signal_connect (source2, "pad-added", G_CALLBACK (cb_new_pad), depay2);	
@@ -163,13 +168,13 @@ speed-preset        : Preset name for speed/quality tradeoff options (can affect
 	
 	
 	/* Function calls to create and link request pads */
-	new_sink_request_pad(mixer, filter, "sink_0");
-	new_sink_request_pad(mixer, filter1, "sink_1");
+	//new_sink_request_pad(mixer, filter);
+	//new_sink_request_pad(mixer, filter1);
 
 
 
 	/*	Same as above but not as function	*/
-/*
+
 	GstPadTemplate *mixer_sink_pad_template;
 	mixer_sink_pad_template = gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS    (mixer), "sink_%u");
 	mixer_sink_pad = gst_element_request_pad (mixer, mixer_sink_pad_template, NULL, NULL);
@@ -178,7 +183,7 @@ speed-preset        : Preset name for speed/quality tradeoff options (can affect
 	g_print ("A new request pad %s was created\n", name);
 	g_free (name);
 	
-	filter_src_pad = gst_element_get_static_pad(filter, "src");
+	filter_src_pad = gst_element_get_static_pad(decoder, "src");
 	name = gst_pad_get_name (filter_src_pad);
 	g_print ("A new static source pad %s was created\n", name);
 	g_free (name);
@@ -194,7 +199,7 @@ speed-preset        : Preset name for speed/quality tradeoff options (can affect
 	g_print ("A new request pad %s was created\n", name);
 	g_free (name);
 	
-	filter_src_pad2 = gst_element_get_static_pad(filter1, "src");
+	filter_src_pad2 = gst_element_get_static_pad(decoder2, "src");
 	name = gst_pad_get_name (filter_src_pad2);
 	g_print ("A new static source pad %s was created\n", name);
 	g_free (name);
@@ -203,18 +208,53 @@ speed-preset        : Preset name for speed/quality tradeoff options (can affect
 		g_print("link error videomixer");
 		return -1;
 	}
-*/
+
+mixer_sink_pad_template = gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS    (mixer), "sink_%u");
+	mixer_sink_pad3 = gst_element_request_pad (mixer, mixer_sink_pad_template, NULL, NULL);
+        
+	name = gst_pad_get_name (mixer_sink_pad3);
+	g_print ("A new request pad %s was created\n", name);
+	g_free (name);
 	
-	if(!gst_element_link(mixer, videosink)){
-	g_print("error linking mixer with sink");
-	return -1;
+	filter_src_pad3 = gst_element_get_static_pad(decoder3, "src");
+	name = gst_pad_get_name (filter_src_pad3);
+	g_print ("A new static source pad %s was created\n", name);
+	g_free (name);
+	
+	if(gst_pad_link (filter_src_pad3, mixer_sink_pad3) != GST_PAD_LINK_OK){
+		g_print("link error videomixer");
+		return -1;
 	}
-	else{
-	g_print("\nmixer linked with videosink \n");
+	mixer_sink_pad_template = gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS    (mixer), "sink_%u");
+	mixer_sink_pad4 = gst_element_request_pad (mixer, mixer_sink_pad_template, NULL, NULL);
+        
+	name = gst_pad_get_name (mixer_sink_pad4);
+	g_print ("A new request pad %s was created\n", name);
+	g_free (name);
+	
+	filter_src_pad4 = gst_element_get_static_pad(decoder4, "src");
+	name = gst_pad_get_name (filter_src_pad4);
+	g_print ("A new static source pad %s was created\n", name);
+	g_free (name);
+	
+	if(gst_pad_link (filter_src_pad4, mixer_sink_pad4) != GST_PAD_LINK_OK){
+		g_print("link error videomixer");
+		return -1;
 	}
 
-	
 
+
+
+
+
+	g_object_set(G_OBJECT(mixer), "background", 3, NULL);
+	g_object_set(G_OBJECT(mixer_sink_pad), "xpos", 0, "ypos", 0, NULL);
+	g_object_set(G_OBJECT(mixer_sink_pad2), "xpos", 960, "ypos", 0, NULL);
+	g_object_set(G_OBJECT(mixer_sink_pad3), "xpos", 0, "ypos", 500, NULL);
+	g_object_set(G_OBJECT(mixer_sink_pad4), "xpos", 960, "ypos", 500, NULL);
+	
+	
+	
 	
 	g_print("\nWe're at the end of the line here \n");
 	gst_element_set_state (pipeline, GST_STATE_PLAYING);
