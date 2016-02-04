@@ -177,7 +177,7 @@ def startCams():
 
 thread_1 = Thread(target = startCams)
 thread_1.start()
-#thread_2 = Thread(target = call(["./mixerh264", "0", "0", "0"]))
+#thread_2 = Thread(target = call(["./rtptest", "0", "0", "0"]))
 #thread_2.start()
 ####
 gui = Gui(GRID_W, GRID_H)
