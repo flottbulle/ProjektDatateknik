@@ -165,7 +165,7 @@ class Gui():
       #for thread in threads:
        #  thread.join()
 
- 
+
    def execute_url(self, url):
       print url
       urllib2.urlopen(url, timeout = 2)
@@ -175,7 +175,7 @@ class Gui():
 
 #thread_2 = Thread(call(["./mixerh264", "0", "0", "0"]))
 #thread_2.start()
-
+##
 gui = Gui(GRID_W, GRID_H)
 
 

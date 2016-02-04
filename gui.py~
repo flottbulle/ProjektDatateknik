@@ -162,8 +162,8 @@ class Gui():
          thread.start()
          threads.append(thread)
 
-      for thread in threads:
-         thread.join()
+      #for thread in threads:
+       #  thread.join()
 
  
    def execute_url(self, url):
