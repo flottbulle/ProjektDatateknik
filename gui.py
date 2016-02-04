@@ -163,10 +163,11 @@ class Gui():
 
 
 gui_1 = Gui(GRID_W, GRID_H)
+
 thread_1 = Thread(target = gui_1)
 thread_1.start()
-#thread_2 = Thread(call(["./mixerh264", "0", "0", "0"]))
-#thread_2.start()
+thread_2 = Thread(call(["./rtptest", "0", "0", "0"]))
+thread_2.start()
 
 
 

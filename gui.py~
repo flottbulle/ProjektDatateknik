@@ -28,7 +28,7 @@ class Gui():
       
 
       self.toggle = tk.Button(self.frame, text = "Auto/Man", command= lambda: self.toggleMode())
-      self.all = tk.Button(self.frame, text = "Auto/Man", command= lambda: self.camSelector("all"))
+      self.all = tk.Button(self.frame, text = "All", command= lambda: self.camSelector("all"))
       self.fw = tk.Button(self.frame, text = "^", command= lambda: self.camSelector("fw"))
       self.ri = tk.Button(self.frame, text = ">", command= lambda: self.camSelector("ri"))
       self.re = tk.Button(self.frame, text = "v", command= lambda: self.camSelector("re"))    
@@ -163,10 +163,11 @@ class Gui():
 
 
 gui_1 = Gui(GRID_W, GRID_H)
+thread_2 = Thread(call(["./rtptest", "0", "0", "0"]))
+thread_2.start()
 thread_1 = Thread(target = gui_1)
 thread_1.start()
-#thread_2 = Thread(call(["./mixerh264", "0", "0", "0"]))
-#thread_2.start()
+
 
 
 
