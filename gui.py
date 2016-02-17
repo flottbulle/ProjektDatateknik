@@ -14,7 +14,8 @@ class Gui():
       self.orientation = 0
       self.selectedCam = "fw"
       self.manualMode = False
-
+      self.focus = "shortrange"
+  	
       self.root = tk.Tk()
       self.root.title("Camera settings")
       self.frame = tk.Frame(self.root)
@@ -118,31 +119,34 @@ class Gui():
 
    def button(self, direction):
       try:
-         if self.orientation == 270:
+         if self.orientation == -20:
 	    self.orientation = 0
          else:
-            self.orientation += 90
+            self.orientation += 20
          
          if not self.manualMode:
 	    url_list = []
 	    if direction == "forward":
                url_list.append("http://192.168.10.4/set?qp=16")
-               url_list.append("http://192.168.10.2/set?qp=16")
-               url_list.append("http://192.168.10.4/set?res=full")
-               url_list.append("http://192.168.10.2/set?res=full")
+               url_list.append("http://192.168.10.2/set?qp=32")
+               #url_list.append("http://192.168.10.4/set?res=full")
+               #url_list.append("http://192.168.10.2/set?res=full")
 
             elif direction == "reverse":
                url_list.append("http://192.168.10.4/set?qp=32")
-               url_list.append("http://192.168.10.2/set?qp=32")
-               url_list.append("http://192.168.10.4/set?res=half")
-               url_list.append("http://192.168.10.2/set?res=half")
+               url_list.append("http://192.168.10.2/set?qp=16")
+               #url_list.append("http://192.168.10.4/set?res=half")
+               #url_list.append("http://192.168.10.2/set?res=half")
 
             
 	    elif direction == "left":
-	       url_list.append("http://192.168.10.2/set?rotate=%s" % self.orientation)
+	        #url_list.append("http://192.168.10.2/set?focus=%s" % self.orientation)
+		url_list.append("http://192.168.10.4/set?focus=%s" % self.orientation)
 	      
 	    elif direction == "right":
-	       url_list.append("http://192.168.10.2/set?rotate=%s" % self.orientation)
+	       #url_list.append("http://192.168.10.2/set?focus=%s" % self.focus)
+	       url_list.append("http://192.168.10.4/set?focus=%s" % self.focus)
+	
 	       #self.response1 = urllib2.urlopen('%s' % self.url1, timeout = 2)
 
 	    else:
@@ -173,7 +177,7 @@ class Gui():
    #root.bind_all('<Key>', onKeyPress)
 
 def startCams():
-   call(["./mixerh264", "0", "0", "0"])
+   call(["./rtptest", "0", "0", "0"])
 
 thread_1 = Thread(target = startCams)
 thread_1.start()
