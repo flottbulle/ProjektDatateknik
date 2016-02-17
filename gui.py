@@ -4,12 +4,8 @@ import Tkinter as tk
 import time
 import urllib2
 
-
-GRID_W = "500"
-GRID_H = "500"
-
 class Gui():
-   def __init__(self, GRID_W, GRID_H):
+   def __init__(self):
 
       self.selectedCam = "fw"
 
@@ -117,16 +113,12 @@ class Gui():
        x = event.char
        if x == "d":
 	  print "d"
-          #self.canvas.move(a, 2, 0)
        elif x == "a":
           print "a"
-          #self.canvas.move(a, -2, 0)
        elif x == "w":
           print "w"
-          #self.canvas.move(a, 0, -2)
        elif x == "s":
           print "s"
-          #self.canvas.move(a, 0, 2)
 
    # Changes cam parameters by http requests when "driving"
    def button(self, direction):
@@ -135,20 +127,20 @@ class Gui():
          if not self.manualMode:
 	    url_list = []
 	    if direction == "forward":
-               url_list.append("http://%s/set?qp=16" % self.ipRe)
+               url_list.append("http://%s/set?qp=32" % self.ipRe)
                url_list.append("http://%s/set?qp=16" % self.ipFw)
 
             elif direction == "reverse":
-               url_list.append("http://%s/set?qp=32" % self.ipRe)
+               url_list.append("http://%s/set?qp=16" % self.ipRe)
                url_list.append("http://%s/set?qp=32" % self.ipFw)
 
 	    elif direction == "left":
-	       print ""
-	       #url_list.append("http://192.168.10.2/set?rotate=%s" % self.orientation)
+	       url_list.append("http://%s/set?qp=16" % self.ipLe)
+	       url_list.append("http://%s/set?qp=32" % self.ipRi)
 
 	    elif direction == "right":
-	       print ""
-	       #url_list.append("http://192.168.10.2/set?rotate=%s" % self.orientation)
+	       url_list.append("http://%s/set?qp=32" % self.ipLe)
+	       url_list.append("http://%s/set?qp=16" % self.ipRi)
 
 	    else:
 	       return
@@ -158,7 +150,7 @@ class Gui():
       except Exception as e:
          print (type(e))
 
-
+   # Returns the actual IP of the currently selected cam(s)
    def returnCamIp(self):
       if self.selectedCam == "fw":
          return self.ipFw
@@ -198,14 +190,11 @@ class Gui():
    # Creates a new thread for each url
    def createUrlThreads(self, url_list):
       for url in url_list:
-         #threads = []
          thread = Thread(target = self.executeUrl, args = [url])
          thread.setDaemon(True)
          thread.start()
-         #threads.append(thread)
 
    def executeUrl(self, url):
-      print url
       urllib2.urlopen(url, timeout = 2)
 
    #root.bind_all('<Key>', onKeyPress)
@@ -216,4 +205,4 @@ def startCams():
 
 thread_1 = Thread(target = startCams)
 thread_1.start()
-gui = Gui(GRID_W, GRID_H)
+gui = Gui()
