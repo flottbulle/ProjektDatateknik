@@ -18,14 +18,13 @@ cb_new_pad (GstElement *element,
 }
 
 int main(int argc, char *argv[]) {
-	/* Initialize elements used for pipeline */
+
 	GstElement *pipeline, *source, *decoder, *depay, 
 	*source2, *videosink, *decoder2, *depay2, 
 	*source3, *decoder3, *depay3, 
 	*source4, *decoder4, *depay4, 
 	*mixer, *jitter1, *jitter2, *jitter3, *jitter4, 
-	*textoverlay1, *textoverlay2, *textoverlay3, *textoverlay4, 		
-	*convert1, *filter, *filter2, *filter3, *filter4, 
+	*textoverlay1, *textoverlay2, *textoverlay3, *textoverlay4, 		*convert1, *filter, *filter2, *filter3, *filter4, 
 	*videoscale, *videoscale2, *videoscale3, *videoscale4;
 
 	GstPad *mixer_sink_pad, *mixer_sink_pad2, *filter_src_pad, *filter_src_pad2, *mixer_sink_pad3, *mixer_sink_pad4, *filter_src_pad3, *filter_src_pad4;
@@ -35,12 +34,9 @@ int main(int argc, char *argv[]) {
 	GMainLoop *loop;
 	gchar *camip, *camip2;
 	GstCaps *caps, *caps2, *caps3, *caps4;
-	/* Variables used for latency, buffering */
 	gint LATENCY = 25;
 	gint JITTERLAT = 50;
 	gint DECODESKIP= 2;
-	
-	/* Size and positioning of camera feeds on window */
 	gint vHeightFRONT = 750;
 	gint vWidthFRONT = 950;
 	gint vHeightBACK = 330;
@@ -58,7 +54,7 @@ int main(int argc, char *argv[]) {
 	gint RIGHT_POS_X = 1380;
 	gint RIGHT_POS_Y = 50;
 
-	/* Cam ip adresses */
+
 	camip="rtsp://192.168.2.130/h264.sdp";
 	camip2="rtsp://192.168.2.131/h264.sdp";
 	gchar *name;
@@ -122,23 +118,20 @@ int main(int argc, char *argv[]) {
 	filter3 = gst_element_factory_make("capsfilter", "filter3");
 	g_object_set(G_OBJECT(filter3), "caps", caps3, NULL);
 
-	/* Set properties on videoscale element */
+	
 	g_object_set(G_OBJECT(filter4), "caps", caps4, NULL);
 	g_object_set(G_OBJECT(videoscale), "add-borders", gfalse, NULL);
 	g_object_set(G_OBJECT(videoscale2), "add-borders", gfalse, NULL);
 	g_object_set(G_OBJECT(videoscale3), "add-borders", gfalse, NULL);
 	g_object_set(G_OBJECT(videoscale4), "add-borders", gfalse, NULL);
 
-	/* Create the pipeline */
+
 	pipeline = gst_pipeline_new("the-pipeline");
 	
-	/* Check if any element could not be created correctly */
-	if (!videosink || !source || !decoder|| !depay || !jitter1 || !source2 || !decoder2 || !depay2 || !jitter2 || !source3 || !decoder3 || !depay3 || !jitter3 || !source4 || !decoder4 || !depay4 || !jitter4 || !textoverlay1 || !textoverlay2 || !textoverlay3 || !textoverlay4 || !convert1 || !videoscale || !videoscale2 || !videoscale3 || !videoscale4 || !filter || !filter2 || !filter3 || !filter4) {
+	if (!videosink || !source || !decoder|| !depay || !jitter1 || !source2 || !decoder2 || !depay2 || !jitter2 || !source3 || !decoder3 || !depay3 || !jitter3 || !source4 || !decoder4 || !depay4 || !jitter4 || !textoverlay1 || !textoverlay2 || !textoverlay3 || !textoverlay4 || !convert1 || !videoscale || !videoscale2 || !videoscale3 || !videoscale4) {
 	    g_printerr ("One element could not be created. Exiting.\n");
 	    return -1;
 	}
-	
-	/* Set properties on elements */
 	g_object_set(G_OBJECT(source), "location", camip, "buffer-mode", 0, "latency", JITTERLAT, "protocols", 0x00000007, NULL);
 	g_object_set(G_OBJECT(source2), "location", camip2, "buffer-mode", 0, "latency", JITTERLAT,  "protocols", 0x00000007, NULL);
 	g_object_set(G_OBJECT(source3), "location", camip2, "buffer-mode", 0, "latency", JITTERLAT, "protocols", 0x00000007, NULL);
@@ -158,9 +151,8 @@ int main(int argc, char *argv[]) {
 	g_object_set(G_OBJECT(textoverlay3), "text", "Rigth Cam", "valignment", 2, NULL);
 	g_object_set(G_OBJECT(textoverlay4), "text", "Back Cam", "valignment", 2, NULL);
 
+	//g_object_set(G_OBJECT(videosink), "fps-update-interval", 500, NULL);
 	g_object_set(G_OBJECT(videosink), "sync", gfalse, NULL);
-	
-	/* Add elemenent onto the bin in order to link later */
 	gst_bin_add_many (GST_BIN(pipeline), source, jitter1, depay, decoder, textoverlay1, videoscale, filter, mixer, convert1, videosink, NULL);
 	gst_bin_add_many (GST_BIN(pipeline), source2, jitter2, depay2, decoder2, videoscale2, filter2, textoverlay2, NULL);
 	gst_bin_add_many (GST_BIN(pipeline), source3, jitter3, depay3, decoder3, videoscale3, filter3, textoverlay3,  NULL);
@@ -175,7 +167,7 @@ int main(int argc, char *argv[]) {
   	return -1;
 	}
 	
-	/* Link mixer with the final vidosink */
+	
 	if(!gst_element_link_many(mixer, videosink, NULL)){
 		g_print("error linking mixer with sink");
 		return -1;
@@ -191,8 +183,7 @@ int main(int argc, char *argv[]) {
 	g_signal_connect (source3, "pad-added", G_CALLBACK (cb_new_pad), jitter3);	
 	g_signal_connect (source4, "pad-added", G_CALLBACK (cb_new_pad), jitter4);	
 
-	/*	Link 4 requestpapd videomixer with the rest of the pipeline	*/
-
+	/*	Same as above but not as function	*/
 	GstPadTemplate *mixer_sink_pad_template;	
 
 	mixer_sink_pad_template = gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS    (mixer), "sink_%u");
@@ -212,6 +203,8 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 	
+
+
 	mixer_sink_pad_template = gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS    (mixer), "sink_%u");
 	mixer_sink_pad3 = gst_element_request_pad (mixer, mixer_sink_pad_template, NULL, NULL);
         
@@ -228,6 +221,11 @@ int main(int argc, char *argv[]) {
 		g_print("link error videomixer");
 		return -1;
 	}
+	
+
+
+
+
 	
 	mixer_sink_pad_template = gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS    (mixer), "sink_%u");
 	mixer_sink_pad = gst_element_request_pad (mixer, mixer_sink_pad_template, NULL, NULL);
@@ -246,6 +244,7 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 	
+
 	mixer_sink_pad_template = gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS    (mixer), "sink_%u");
 	mixer_sink_pad4 = gst_element_request_pad (mixer, mixer_sink_pad_template, NULL, NULL);
         
@@ -270,7 +269,6 @@ int main(int argc, char *argv[]) {
 	g_object_set(G_OBJECT(mixer_sink_pad), "xpos", FRONT_POS_X, "ypos", FRONT_POS_Y, NULL);
 	g_object_set(G_OBJECT(mixer_sink_pad4), "xpos", BACK_POS_X, "ypos", BACK_POS_Y, NULL);
 	
-	/* Free pad resources */
 	gst_object_unref(mixer_sink_pad);
 	gst_object_unref(filter_src_pad);
 	gst_object_unref(mixer_sink_pad2);
@@ -280,16 +278,34 @@ int main(int argc, char *argv[]) {
 	gst_object_unref(mixer_sink_pad4);
 	gst_object_unref(filter_src_pad4);
 	
-	/* Set pipiline to plaing mode to start the stream */
+	g_print("\nWe're at the end of the line here \n");
 	gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
-	/* run main loop */
+	GstQuery *q;
+	q = gst_query_new_latency();
+	if(gst_element_query (pipeline, q)){
+		gboolean live;
+		GstClockTime minlat, maxlat;
+		gst_query_parse_latency (q, &live, &minlat, &maxlat);
+		g_print("\nWe're at the end of the line here \n");
+
+		g_print ("duration = %"GST_TIME_FORMAT, GST_TIME_ARGS (q));
+		g_print("\nWe're at the end of the line here \n");
+		gst_query_set_latency (q,
+                       live,
+                       minlat,
+                       maxlat);
+	}
+	gst_query_unref (q); 
+
+	
 	loop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(loop);
 	
 
 	/* Wait until error or EOS */
 	bus = gst_element_get_bus (pipeline);
+
 	msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE , GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
 
 	/* Free resources */
