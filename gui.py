@@ -251,7 +251,7 @@ class Gui():
 
 # Calls extern gstreamer application
 def startCams():
-   call(["./mixerh264", "0", "0", "0"])
+   call(["./rtpclient", "0", "0", "0"])
 
 thread_1 = Thread(target = startCams)
 thread_1.start()

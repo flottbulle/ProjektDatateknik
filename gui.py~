@@ -6,7 +6,7 @@ import urllib2
 
 class Gui():
    def __init__(self):
-
+      self.BUTTON_WIDTH = 8
       self.selectedCam = "fw"
 
       self.ipFw = "192.168.10.2"
@@ -24,22 +24,24 @@ class Gui():
       self.frame = tk.Frame(self.root)
       self.frame.pack(fill=tk.X, side=tk.BOTTOM)
 
-      self.forward = tk.Button(self.frame, text = "Forward", command= lambda: self.button("forward"))
-      self.load = tk.Button(self.frame, text = " Load ", command= lambda: self.button("load"))
-      self.reverse = tk.Button(self.frame, text = "Reverse", command= lambda: self.button("reverse"))
-      self.left = tk.Button(self.frame, text = "Left", command= lambda: self.button("left"))
-      self.right = tk.Button(self.frame, text = "Right", command= lambda: self.button("right"))
+      self.forward = tk.Button(self.frame, text = "Forward", command= lambda: self.button("forward"), width = self.BUTTON_WIDTH)
+      self.load = tk.Button(self.frame, text = " Load ", command= lambda: self.button("load"), width = self.BUTTON_WIDTH)
+      self.reverse = tk.Button(self.frame, text = "Reverse", command= lambda: self.button("reverse"), width = self.BUTTON_WIDTH)
+      self.left = tk.Button(self.frame, text = "Left", command= lambda: self.button("left"), width = self.BUTTON_WIDTH)
+      self.right = tk.Button(self.frame, text = "Right", command= lambda: self.button("right"), width = self.BUTTON_WIDTH)
 
 
-      self.toggle = tk.Button(self.frame, text = "Manual", command= lambda: self.toggleMode())
-      self.all = tk.Button(self.frame, text = "All", command= lambda: self.camSelector("all"))
-      self.fw = tk.Button(self.frame, text = "^", command= lambda: self.camSelector("fw"))
-      self.ri = tk.Button(self.frame, text = ">", command= lambda: self.camSelector("ri"))
-      self.re = tk.Button(self.frame, text = "v", command= lambda: self.camSelector("re"))
-      self.le = tk.Button(self.frame, text = "<", command= lambda: self.camSelector("le"))
+      self.toggle = tk.Button(self.frame, text = "Manual", command= lambda: self.toggleMode(), width = self.BUTTON_WIDTH)
+      self.all = tk.Button(self.frame, text = "All", command= lambda: self.camSelector("all"), width = self.BUTTON_WIDTH)
+      self.fw = tk.Button(self.frame, text = "^", command= lambda: self.camSelector("fw"), width = self.BUTTON_WIDTH)
+      self.ri = tk.Button(self.frame, text = ">", command= lambda: self.camSelector("ri"), width = self.BUTTON_WIDTH)
+      self.re = tk.Button(self.frame, text = "v", command= lambda: self.camSelector("re"), width = self.BUTTON_WIDTH)
+      self.le = tk.Button(self.frame, text = "<", command= lambda: self.camSelector("le"), width = self.BUTTON_WIDTH)
 
-      self.max = tk.Button(self.frame, text = "MAX", command= lambda: self.manualChange("max"))
-      self.min = tk.Button(self.frame, text = "MIN", command= lambda: self.manualChange("min"))
+      self.max = tk.Button(self.frame, text = "MAX", command= lambda: self.manualChange("max"), width = self.BUTTON_WIDTH)
+      self.min = tk.Button(self.frame, text = "MIN", command= lambda: self.manualChange("min"), width = self.BUTTON_WIDTH)
+
+      self.changeip = tk.Button(self.frame, text = "Change IPs", command= lambda: self.spawnIpWindow(), width = self.BUTTON_WIDTH)
 
 
       self.frame.columnconfigure(0, weight=1)
@@ -64,6 +66,8 @@ class Gui():
       self.le.grid(row=3, column=5)
       self.max.grid(row=4, column=0)
       self.min.grid(row=4, column=1)
+
+      self.changeip.grid(row=6, column=0)
 
       self.root.mainloop()
 
@@ -108,7 +112,8 @@ class Gui():
 	 elif cam == "le":
             self.le.configure(fg = "GREEN")
 
-   # Not in use right now
+   # Not in use right now, could be used instead of the buttons in the GUI
+   # to simulate the vehicle movements
    def onKeyPress(self, event):
        x = event.char
        if x == "d":
@@ -187,6 +192,51 @@ class Gui():
 
          self.createUrlThreads(url_list)
 
+   #Spawns the change camera IP window
+   def spawnIpWindow(self):
+      self.t = tk.Toplevel(self.root)
+      self.t.title("Change Ips")
+      self.frame2 = tk.Frame(self.t)
+      self.frame2.pack(fill=tk.X, side=tk.BOTTOM)
+
+      self.change = tk.Button(self.frame2, text = "Change", command= lambda: self.changeIp())
+      
+      
+      self.labelFront = tk.Label(self.t, text="Front camera")
+      self.labelRight = tk.Label(self.t, text="Right camera")
+      self.labelReverse = tk.Label(self.t, text="Reverse camera")
+      self.labelLeft = tk.Label(self.t, text="Left camera")
+
+      self.frontEntry = tk.Entry(self.t)
+      self.rightEntry = tk.Entry(self.t)
+      self.reverseEntry = tk.Entry(self.t)
+      self.leftEntry = tk.Entry(self.t)
+
+      self.frontEntry.insert(10, self.ipFw)
+      self.rightEntry.insert(10, self.ipRi)
+      self.reverseEntry.insert(10, self.ipRe)
+      self.leftEntry.insert(10, self.ipLe)
+      
+      self.labelFront.pack()
+      self.frontEntry.pack(padx=5)
+      self.labelRight.pack()
+      self.rightEntry.pack(padx=5)
+      self.labelReverse.pack()
+      self.reverseEntry.pack(padx=5)
+      self.labelLeft.pack()
+      self.leftEntry.pack(padx=5)
+
+      self.change.pack()
+
+   #Assigns new camera IPs to the object 
+   def changeIp(self):
+      self.ipFw = self.frontEntry.get()
+      self.ipRi = self.rightEntry.get()
+      self.ipRe = self.reverseEntry.get()
+      self.ipLe = self.leftEntry.get()
+      self.allCamIps = [self.ipFw, self.ipRi, self.ipRe, self.ipLe]
+      
+      
    # Creates a new thread for each url
    def createUrlThreads(self, url_list):
       for url in url_list:
